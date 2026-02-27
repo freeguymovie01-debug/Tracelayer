@@ -1,0 +1,74 @@
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x", "debian-openssl-1.1.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  SUPERVISOR
+  ASSESSOR
+}
+
+enum AssessmentStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+model User {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  password    String
+  name        String
+  role        Role     @default(ASSESSOR)
+  createdAt   DateTime @default(now())
+  assessments Assessment[]
+}
+
+model Zone {
+  id          String   @id @default(cuid())
+  name        String
+  lat         Float
+  lng         Float
+  description String?
+  assessments Assessment[]
+  alerts      Alert[]
+}
+
+model Assessment {
+  id               String           @id @default(cuid())
+  zoneId           String
+  userId           String
+  lat              Float
+  lng              Float
+  damageType       String
+  severityScore    Float            @default(0)
+  structureDamage  Float            @default(0)
+  personsDamage    Float            @default(0)
+  infraDamage      Float            @default(0)
+  peopleAffected   Int              @default(0)
+  aiConfidence     Float?
+  photoUrl         String?
+  notes            String?
+  status           AssessmentStatus @default(PENDING)
+  createdAt        DateTime         @default(now())
+  zone             Zone             @relation(fields: [zoneId], references: [id])
+  user             User             @relation(fields: [userId], references: [id])
+  alerts           Alert[]
+}
+
+model Alert {
+  id             String     @id @default(cuid())
+  assessmentId   String
+  zoneId         String
+  severityScore  Float
+  message        String
+  createdAt      DateTime   @default(now())
+  assessment     Assessment @relation(fields: [assessmentId], references: [id])
+  zone           Zone       @relation(fields: [zoneId], references: [id])
+}

@@ -1,0 +1,6 @@
+[
+	{
+		"pkg": "@capgo/capacitor-bluetooth-low-energy",
+		"classpath": "ee.forgr.plugin.bluetooth_low_energy.BluetoothLowEnergyPlugin"
+	}
+]

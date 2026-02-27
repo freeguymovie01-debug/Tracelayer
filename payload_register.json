@@ -1,0 +1,6 @@
+{
+    "name": "Test Admin",
+    "email": "admin@dda.com",
+    "password": "password123",
+    "role": "ADMIN"
+}

@@ -1,0 +1,40 @@
+version: "3.9"
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: dda
+      POSTGRES_PASSWORD: dda_secret
+      POSTGRES_DB: dda_db
+    ports: [ "5434:5432" ]
+    volumes: [ dda_pg_data:/var/lib/postgresql/data ]
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U dda -d dda_db" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports: [ "6379:6379" ]
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+
+  app:
+    build: ./backend
+    ports: [ "4000:4000" ]
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://dda:dda_secret@postgres:5432/dda_db
+      REDIS_URL: redis://redis:6379
+      AI_CONFIDENCE_THRESHOLD: "0.65"
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    volumes:
+      - ./backend/uploads:/app/uploads
+      - ./backend/src:/app/src
+
+volumes:
+  dda_pg_data:
